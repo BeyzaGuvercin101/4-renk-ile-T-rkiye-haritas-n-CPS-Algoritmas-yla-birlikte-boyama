@@ -1,0 +1,138 @@
+from typing import Dict, List, Optional
+
+def is_valid_coloring(node: str, color: str, graph: Dict[str, List[str]], coloring: Dict[str, str]) -> bool:
+    """Kontrol eder: Seçilen rengin komşularla çakışmaması."""
+    for neighbor in graph[node]:
+        if neighbor in coloring and coloring[neighbor] == color:
+            return False
+    return True
+
+def select_uncolored_node(graph: Dict[str, List[str]], coloring: Dict[str, str]) -> Optional[str]:
+    """En az seçenekli düğümü seç (MRV Heuristiği)."""
+    uncolored_nodes = [node for node in graph if node not in coloring]
+    if not uncolored_nodes:
+        return None
+    return min(uncolored_nodes, key=lambda node: sum(1 for color in colors_4 if is_valid_coloring(node, color, graph, coloring)))
+
+def csp_coloring(graph: Dict[str, List[str]], colors: List[str], coloring: Dict[str, str] = {}, depth: int = 0, max_depth: int = 1000) -> Optional[Dict[str, str]]:
+    """Backtracking ile harita boyama çözümü (derinlik sınırlı)."""
+    if depth > max_depth:
+        print("Derinlik sınırına ulaşıldı. Çözüm başarısız.")
+        return None
+
+    # Eğer tüm düğümler boyandıysa, çözüm tamamlandı.
+    if len(coloring) == len(graph):
+        return coloring
+
+    # En az seçeneği olan düğümü seç
+    node = select_uncolored_node(graph, coloring)
+    if node is None:
+        return None
+
+    for color in colors:
+        if is_valid_coloring(node, color, graph, coloring):
+            coloring[node] = color
+            print(f"Düğüm {node}, renk {color}")  # Hata ayıklama için
+            result = csp_coloring(graph, colors, coloring, depth + 1, max_depth)
+            if result:
+                return result
+            # Eğer çözüm başarısızsa geri al
+            print(f"Geri alınıyor: {node}, renk {color}")  # Hata ayıklama için
+            del coloring[node]
+
+    return None
+
+# Türkiye haritası grafiği (komşuluk bilgisi)
+turkey_map = {
+    "Adana": ["Osmaniye", "Hatay", "Kahramanmaras", "Kayseri", "Ni\u011fde", "Mersin"],
+    "Adiyaman": ["Kahramanmaras", "Gaziantep", "Sanliurfa", "Diyarbakir", "Malatya"],
+    "Afyonkarahisar": ["Eskisehir", "Kutahya", "Usak", "Denizli", "Isparta", "Burdur", "Konya"],
+    "Agri": ["Igdir", "Kars", "Erzurum", "Muş", "Van", "Bitlis"],
+    "Aksaray": ["Ankara", "Kirsehir", "Nevsehir", "Nigde", "Konya"],
+    "Amasya": ["Samsun", "Corum", "Tokat"],
+    "Ankara": ["Eskisehir", "Bolu", "Cankiri", "Kirsehir", "Aksaray", "Konya", "Afyonkarahisar"],
+    "Antalya": ["Mugla", "Burdur", "Isparta", "Konya", "Karaman", "Mersin"],
+    "Ardahan": ["Artvin", "Erzurum", "Kars"],
+    "Artvin": ["Rize", "Erzurum", "Ardahan"],
+    "Aydin": ["Izmir", "Manisa", "Denizli", "Mugla"],
+    "Balikesir": ["Canakkale", "Bursa", "Kutahya", "Manisa", "Izmir"],
+    "Bartin": ["Zonguldak", "Karabuk", "Kastamonu"],
+    "Batman": ["Diyarbakir", "Mardin", "Siirt", "Bitlis", "Mus"],
+    "Bayburt": ["Gumushane", "Trabzon", "Erzurum", "Rize"],
+    "Bilecik": ["Bursa", "Eskisehir", "Kutahya", "Bolu", "Sakarya"],
+    "Bingol": ["Erzincan", "Erzurum", "Mus", "Diyarbakir", "Tunceli", "Elazig"],
+    "Bitlis": ["Van", "Agri", "Mus", "Batman", "Siirt"],
+    "Bolu": ["Zonguldak", "Karabuk", "Cankiri", "Ankara", "Eskisehir", "Bilecik", "Sakarya", "Duzce"],
+    "Burdur": ["Antalya", "Isparta", "Afyonkarahisar", "Denizli", "Mugla"],
+    "Bursa": ["Balikesir", "Kutahya", "Bilecik", "Sakarya", "Yalova"],
+    "Canakkale": ["Balikesir", "Tekirdag", "Edirne"],
+    "Cankiri": ["Kastamonu", "Karabuk", "Bolu", "Ankara", "Kirsehir", "Corum"],
+    "Corum": ["Amasya", "Samsun", "Tokat", "Yozgat", "Kirsehir", "Cankiri", "Ankara"],
+    "Denizli": ["Aydin", "Manisa", "Usak", "Afyonkarahisar", "Isparta", "Burdur", "Mugla"],
+    "Diyarbakir": ["Adiyaman", "Sanliurfa", "Mardin", "Batman", "Bingol", "Elazig", "Malatya"],
+    "Duzce": ["Bolu", "Sakarya", "Zonguldak"],
+    "Edirne": ["Kirklareli", "Tekirdag", "Canakkale"],
+    "Elazig": ["Bingol", "Tunceli", "Malatya", "Diyarbakir"],
+    "Erzincan": ["Erzurum", "Bayburt", "Gumushane", "Bingol", "Tunceli"],
+    "Erzurum": ["Kars", "Ardahan", "Artvin", "Rize", "Bayburt", "Erzincan", "Bingol", "Agri"],
+    "Eskisehir": ["Kutahya", "Afyonkarahisar", "Ankara", "Bolu", "Bilecik"],
+    "Gaziantep": ["Sanliurfa", "Adiyaman", "Kilis", "Hatay", "Osmaniye", "Kahramanmaras"],
+    "Giresun": ["Trabzon", "Gumushane", "Erzincan", "Sivas", "Ordu"],
+    "Gumushane": ["Bayburt", "Trabzon", "Giresun", "Erzincan", "Erzurum"],
+    "Hakkari": ["Sirnak", "Van"],
+    "Hatay": ["Osmaniye", "Gaziantep", "Kilis", "Adana"],
+    "Igdir": ["Agri", "Kars"],
+    "Isparta": ["Antalya", "Burdur", "Afyonkarahisar", "Konya"],
+    "Istanbul": ["Kocaeli", "Tekirdag"],
+    "Izmir": ["Manisa", "Aydin", "Balikesir"],
+    "Kahramanmaras": ["Adana", "Osmaniye", "Gaziantep", "Adiyaman", "Malatya", "Kayseri"],
+    "Karabuk": ["Bartin", "Kastamonu", "Cankiri", "Bolu", "Zonguldak"],
+    "Karaman": ["Konya", "Antalya", "Mersin"],
+    "Kars": ["Ardahan", "Igdir", "Agri", "Erzurum"],
+    "Kastamonu": ["Sinop", "Bartin", "Karabuk", "Cankiri"],
+    "Kayseri": ["Sivas", "Yozgat", "Nevsehir", "Nigde", "Adana", "Kahramanmaras", "Malatya"],
+    "Kilis": ["Gaziantep", "Hatay"],
+    "Kirsehir": ["Ankara", "Aksaray", "Nevsehir", "Yozgat"],
+    "Kirklareli": ["Edirne", "Tekirdag"],
+    "Konya": ["Isparta", "Afyonkarahisar", "Ankara", "Aksaray", "Nigde", "Karaman", "Antalya"],
+    "Kutahya": ["Afyonkarahisar", "Eskisehir", "Bilecik", "Bursa", "Balikesir", "Manisa", "Usak"],
+    "Malatya": ["Elazig", "Tunceli", "Erzincan", "Sivas", "Kayseri", "Kahramanmaras", "Adiyaman", "Diyarbakir"],
+    "Manisa": ["Izmir", "Aydin", "Denizli", "Usak", "Kutahya", "Balikesir"],
+    "Mardin": ["Sanliurfa", "Diyarbakir", "Batman", "Sirnak"],
+    "Mersin": ["Antalya", "Karaman", "Nigde", "Adana"],
+    "Mugla": ["Aydin", "Denizli", "Burdur", "Antalya"],
+    "Mus": ["Bitlis", "Agri", "Erzurum", "Bingol", "Batman"],
+    "Nevsehir": ["Aksaray", "Kirsehir", "Yozgat", "Kayseri", "Nigde"],
+    "Nigde": ["Aksaray", "Nevsehir", "Kayseri", "Adana", "Mersin", "Konya"],
+    "Ordu": ["Giresun", "Sivas", "Tokat", "Samsun"],
+    "Osmaniye": ["Adana", "Hatay", "Gaziantep", "Kahramanmaras"],
+    "Rize": ["Artvin", "Erzurum", "Bayburt", "Trabzon"],
+    "Sakarya": ["Bilecik", "Bolu", "Duzce", "Kocaeli", "Bursa"],
+    "Samsun": ["Sinop", "Corum", "Amasya", "Tokat", "Ordu"],
+    "Sanliurfa": ["Adiyaman", "Gaziantep", "Mardin", "Diyarbakir"],
+    "Siirt": ["Batman", "Bitlis", "Sirnak"],
+    "Sinop": ["Samsun", "Corum", "Kastamonu"],
+    "Sivas": ["Tokat", "Amasya", "Yozgat", "Kayseri", "Malatya", "Erzincan", "Giresun", "Ordu"],
+    "Sirnak": ["Mardin", "Siirt", "Hakkari", "Van"],
+    "Tekirdag": ["Edirne", "Kirklareli", "Istanbul", "Canakkale"],
+    "Tokat": ["Amasya", "Samsun", "Corum", "Yozgat", "Sivas", "Ordu"],
+    "Trabzon": ["Rize", "Gumushane", "Bayburt", "Giresun"],
+    "Tunceli": ["Elazig", "Bingol", "Erzincan", "Malatya"],
+    "Usak": ["Kutahya", "Manisa", "Denizli", "Afyonkarahisar"],
+    "Van": ["Hakkari", "Sirnak", "Siirt", "Bitlis", "Agri"],
+    "Yalova": ["Bursa", "Kocaeli"],
+    "Yozgat": ["Corum", "Kirsehir", "Nevsehir", "Kayseri", "Sivas", "Tokat"],
+    "Zonguldak": ["Bartin", "Karabuk", "Bolu", "Duzce"]
+}
+
+# Kullanılacak renkler (4 renk seçeneği)
+colors_4 = ["Kirmizi", "Yesil", "Mavi", "Sari"]
+
+# Çözüm üretimi
+print("4 renk çözümü:")
+solution_4 = csp_coloring(turkey_map, colors_4)
+if solution_4:
+    for city, color in solution_4.items():
+        print(f"{city}: {color}")
+else:
+    print("Çözüm bulunamadı.")
